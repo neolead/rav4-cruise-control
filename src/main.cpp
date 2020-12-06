@@ -17,9 +17,6 @@ float down = 515;     //resistance of cruise controller when up speed in ohm
 float up = 142;       //resistance of cruise controller when down speed in ohm
 float cancel = 1379;  //resistance of cruise controller when cancel in ohm
 int infelicity = 20;  //infelicity in cruise control controller
-unsigned long previousMillis = 0;  
-const long interval = 200;           // interval of delay read analog
-
 
 WiFiServer server(80);
 
@@ -58,9 +55,8 @@ void initSerial() {
 }
 
 void initWiFi() {
-    ////boolean conn = WiFi.softAP(AP_NameChar, WiFiPassword);
-    WiFi.softAP(AP_NameChar, WiFiPassword); //disabled by leo
-    Serial.println("I'm WIFI-ing");
+    boolean conn = WiFi.softAP(AP_NameChar, WiFiPassword);
+    server.begin();
 }
 
 void initLed() {
@@ -72,11 +68,7 @@ void initLed() {
 void setup() {
     initSerial();
     initWiFi();
-    server.begin();//added by leo
     initLed();
-    delay (500);//added by leo
-    
-
 }
 
 void refreshLeds() {
@@ -105,33 +97,18 @@ void handleControl() {
         if (R2 <= 0.5) {
             leds[LED_4].setState(true);
         }
-         //delay(300); //added by leo // Without it - no wifi
     }
 }
 
-
 void loop() {
-    WiFiClient client = server.available();
-    unsigned long currentMillis = millis();
-    if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
     handleControl();
-    }
 
-    if (currentMillis - previousMillis >= interval) {
-    // save the last time you blinked the LED
-    previousMillis = currentMillis;
     refreshLeds();
-    }
 
-    if (client.available()) {
-        Serial.println("Server availible");
-        /*
-        WiFiClient client = server.available();  //disabled by leo
-        Serial.println("server wifi avail");//disabled by leo
-        */
+    if (server.available()) {
+        WiFiClient client = server.available();
         String request = client.readStringUntil('\r');
+
         if (request.indexOf("LEDON1") > 0) {
             leds[LED_1].setState(true);
         } else if (request.indexOf("LEDON2") > 0) {
