@@ -7,46 +7,60 @@
 
 struct LedItem {
     uint8_t _pin;
+    bool _handleClicks;
     bool _ledState;
     bool _controlState;
     uint32_t _stateChangedTime;
     uint32_t _clickSequenceStarted;
     bool _clicks;
-    LedItem(uint8_t pin) : _ledState{false}, _controlState{false}, _stateChangedTime{0},  _clickSequenceStarted{0}, _clicks{0} {};
+    LedItem(uint8_t pin, bool handleClicks) : _pin{pin},
+                                              _handleClicks{handleClicks},
+                                              _controlState{false},
+                                              _stateChangedTime{0},
+                                              _clickSequenceStarted{0},
+                                              _clicks{0}{};
 
+    LedItem(uint8_t pin) : LedItem(pin, false) {};
+    
     void init() {
         pinMode(_pin, OUTPUT);
     }
 
+    void setHandleClicks(bool value = true) {
+        _handleClicks = value;
+    }
+
     void loop() {
         if (_ledState) {
-            if (TimePassedSince(_stateChangedTime) > LED_LIGHT_TIME_ms) {                
+            if (TimePassedSince(_stateChangedTime) > LED_LIGHT_TIME_ms) {
                 _ledState = false;
+                Serial.printf("\n%lu pin(%d): %s\n", millis(), _pin, "led off");
                 refresh();
             }
         }
     }
 
     void onTrippleClickEvent() {
-        Serial.printf("%lu pin(%d): %s\n", millis(), _pin, "tripple click");        
+        Serial.printf("\n%lu pin(%d): %s\n", millis(), _pin, "tripple click");
     }
 
     void handleClicks() {
         if (!_clickSequenceStarted) {
-            _clickSequenceStarted = millis();                    
+            _clickSequenceStarted = millis();
             _clicks = 1;
-        } else {
-            if (TimePassedSince(_clickSequenceStarted) < ONE_SECOND) {
-                _clicks++;                
-                if(_clicks >= 3)  {
-                    onTrippleClickEvent();                            
-                } else {
-                    Serial.printf("%lu pin(%d) clicked: %d\n", millis(), _pin, _clicks);        
-                    return;
-                }
-                return;
+            return;
+        }
+
+        if (TimePassedSince(_clickSequenceStarted) < ONE_SECOND) {
+            _clicks++;
+            if (_clicks >= 3) {
+                onTrippleClickEvent();
+            } else {
+                Serial.printf("\n%lu pin(%d) clicked: %d\n", millis(), _pin, _clicks);
             }
-        }                  
+            return;
+        }
+
         _clicks = 0;
         _clickSequenceStarted = 0;
     }
@@ -54,18 +68,20 @@ struct LedItem {
     void onStateChange(bool newState) {
         if (_controlState != newState) {
             _controlState = newState;
-            if (_controlState) { 
-                _ledState = true;                            
+            if (_controlState) {
+                Serial.printf("\n%lu pin(%d): %s\n", millis(), _pin, "led on");
+                _ledState = true;
             } else {
-                handleClicks();
+                if (_handleClicks) {
+                    handleClicks();
+                };
             }
-            refresh();    
+            refresh();
             _stateChangedTime = millis();
         }
     }
 
     void refresh() {
-        Serial.printf("%lu pin(%d): %s\n", millis(), _pin, _ledState ? "ON": "OFF");        
         digitalWrite(_pin, _ledState ? HIGH : LOW);
     }
 };

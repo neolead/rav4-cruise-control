@@ -37,14 +37,14 @@ enum ControlEnum : uint8_t { SPEED_UP,
                              NUMS_CONTROL_STATES };
 
 ControlEnum lastControlState{NUMS_CONTROL_STATES};
+uint32_t lastControlStateTime{0};
 
 LedItem leds[NUM_LEDS] = {
     {LED_SPEED_UP_PIN},
     {LED_SPEED_DOWN_PIN},
-    {LED_CANCEL_PIN},
+    {LED_CANCEL_PIN, true},
     {LED_SWITCH_PIN},
 };
-
 
 void initSerial() {
     Serial.begin(115200);
@@ -74,7 +74,7 @@ void refreshLeds() {
     }
 }
 
-static const int infelicity = 20;     //infelicity in cruise control controller
+static const int INFELICITY = 10;     //infelicity in cruise control controller
 static const uint16_t down = 515;     //resistance of cruise controller when up speed in ohm
 static const uint16_t up = 142;       //resistance of cruise controller when down speed in ohm
 static const uint16_t cancel = 1379;  //resistance of cruise controller when cancel in ohm
@@ -82,38 +82,45 @@ static const float V_IN = 3.28;
 static const float R1 = 2000;
 static const float RX = 100000;
 
-
 void onControlChange(ControlEnum newState) {
- if (lastControlState != newState) {
+    if (lastControlState != newState) {
+        if (TimePassedSince(lastControlStateTime) < CONTROL_IGNORE_INTERVAL_ms) {
+            return;
+        }     
+    }
+    lastControlStateTime = millis();
+
+    if (lastControlState != newState) {
         if (lastControlState != NUMS_CONTROL_STATES) {
             leds[lastControlState].onStateChange(false);
-        } 
+        }
         if (newState != NUMS_CONTROL_STATES) {
             leds[newState].onStateChange(true);
         }
-        lastControlState = newState;    
+        lastControlState = newState;
     }
 }
 
 void updateControl() {
-    uint16_t raw = analogRead(analogPin);    
+    uint16_t raw = analogRead(analogPin);
     ControlEnum request = NUMS_CONTROL_STATES;
-    if (raw > 100 ) {
+    if (raw > 100) {
         float tmp = raw * V_IN;
         float Vout = tmp / 1024.0;
         tmp = (V_IN / Vout) - 1;
-        float R2 = R1 * tmp;
-        if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {
+        float R2 = R1 * tmp;        
+        if (R2 <= (down + (down / 100 * INFELICITY)) && R2 >= (down - (down / 100 * INFELICITY))) {
             request = SPEED_UP;
-        } else if (R2 <= (up + (up / 100 * infelicity)) && R2 >= (up - (up / 100 * infelicity))) {
+        } else if (R2 <= (up + (up / 100 * INFELICITY)) && R2 >= (up - (up / 100 * INFELICITY))) {
             request = SPEED_DOWN;
-        } else if (R2 <= (cancel + (cancel / 100 * infelicity)) && R2 >= (cancel - (cancel / 100 * infelicity))) {
+        } else if (R2 <= (cancel + (cancel / 100 * INFELICITY)) && R2 >= (cancel - (cancel / 100 * INFELICITY))) {
             request = CANCEL_CMD;
         } else if (R2 <= 0.5) {
             request = SWITCH_CMD;
-        };
-    }
-    onControlChange(request);        
+        };        
+    }    
+    Serial.print(request);
+    onControlChange(request);
 }
 
 WiFiServer server(80);
@@ -138,7 +145,7 @@ void loop() {
         String requestStr = client.readStringUntil('\r');
         ControlEnum request = NUMS_CONTROL_STATES;
         if (requestStr.indexOf("LEDON1")) {
-            requestStr = SPEED_UP;            
+            requestStr = SPEED_UP;
         } else if (requestStr.indexOf("LEDON2")) {
             requestStr = SPEED_DOWN;
         } else if (requestStr.indexOf("LEDON3")) {
@@ -146,7 +153,7 @@ void loop() {
         } else if (requestStr.indexOf("LEDON4")) {
             requestStr = SWITCH_CMD;
         }
-        if (request != NUMS_CONTROL_STATES) { 
+        if (request != NUMS_CONTROL_STATES) {
             onControlChange(request);
         }
         client.print(response);
