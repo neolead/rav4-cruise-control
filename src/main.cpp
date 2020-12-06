@@ -1,6 +1,8 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
+#include "leds.h"
+
 const char WiFiPassword[] = "12345678";
 const char AP_NameChar[] = "cruisecontrol";
 int analogPin = A0;
@@ -17,113 +19,108 @@ float cancel = 1379;  //resistance of cruise controller when cancel in ohm
 int infelicity = 20;  //infelicity in cruise control controller
 
 WiFiServer server(80);
-String header = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n";
-String html_0 = "<!DOCTYPE html><html><head><title>LED Control</title></head><body>";
-String html_1 = "<h2>Speed Up</h2><form id='F1' action='LEDON1'><input class='button' type='submit' value='LED ON' ></form>";
-String html_2 = "<h2>Speed Down</h2><form id='F1' action='LEDON2'><input class='button' type='submit' value='LED ON' ></form>";
-String html_3 = "<h2>Cancel</h2><form id='F1' action='LEDON3'><input class='button' type='submit' value='LED ON' ></form>";
-String html_4 = "<h2>Switch On - Off</h2><form id='F1' action='LEDON4'><input class='button' type='submit' value='LED ON' ></form>";
-String html_5 = "</body></html>";
-String request = "";
 
-int LED1_Pin = D5;
-int LED2_Pin = D6;
-int LED3_Pin = D7;
-int LED4_Pin = D8;
+static const char* response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
+    "<!DOCTYPE html><html><head><title>LED Control</title></head><body>"
+    "<h2>Speed Up</h2><form id='F1' action='LEDON1'><input class='button' type='submit' value='LED ON' ></form>"
+    "<h2>Speed Down</h2><form id='F1' action='LEDON2'><input class='button' type='submit' value='LED ON' ></form>"
+    "<h2>Cancel</h2><form id='F1' action='LEDON3'><input class='button' type='submit' value='LED ON' ></form>"
+    "<h2>Switch On - Off</h2><form id='F1' action='LEDON4'><input class='button' type='submit' value='LED ON' ></form>"
+    "</body></html>";
 
-struct LedState {
-    bool LED1 : 1;
-    bool LED2 : 1;
-    bool LED3 : 1;
-    bool LED4 : 1;
+static const uint8_t LED1_PIN = D5;
+static const uint8_t LED2_PIN = D6;
+static const uint8_t LED3_PIN = D7;
+static const uint8_t LED4_PIN = D8;
+
+enum LedEnum : uint8_t { LED_1,
+                         LED_2,
+                         LED_3,
+                         LED_4,
+                         NUM_LEDS };
+
+LedItem leds[NUM_LEDS] = {
+    {LED1_PIN},
+    {LED2_PIN},
+    {LED3_PIN},
+    {LED4_PIN},
 };
 
-void setup() {
-    pinMode(LED1_Pin, OUTPUT);
-    pinMode(LED2_Pin, OUTPUT);
-    pinMode(LED3_Pin, OUTPUT);
-    pinMode(LED4_Pin, OUTPUT);
+
+void initSerial() {
+    Serial.begin(115200);
+    Serial.println();
+}
+
+void initWiFi() {
     boolean conn = WiFi.softAP(AP_NameChar, WiFiPassword);
-    Serial.begin(9600);
     server.begin();
 }
 
-void loop() {
-    // Check if a client has connected
-    WiFiClient client = server.available();
-    ////if (!client)  {  return;  }
-    if (!client) {
-        // analog read resistance
-        raw = analogRead(analogPin);
-        if (raw) {
-            buffer = raw * Vin;
-            Vout = (buffer) / 1024.0;
-            buffer = (Vin / Vout) - 1;
-            R2 = R1 * buffer;
-            //Check R2 and send Value
-            if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {
-                Serial.println("Value1: Down");
-                digitalWrite(LED2_Pin, HIGH);
-                delay(150);
-                digitalWrite(LED2_Pin, LOW);
-            }
-            if (R2 <= (up + (up / 100 * infelicity)) && R2 >= (up - (up / 100 * infelicity))) {
-                Serial.println("Value1: Up");
-                digitalWrite(LED1_Pin, HIGH);
-                delay(150);
-                digitalWrite(LED1_Pin, LOW);
-            }
-            if (R2 <= (cancel + (cancel / 100 * infelicity)) && R2 >= (cancel - (cancel / 100 * infelicity))) {
-                Serial.println("Value1: Cancel");
-                digitalWrite(LED3_Pin, HIGH);
-                delay(150);
-                digitalWrite(LED3_Pin, LOW);
-            }
-            if (R2 <= 0.5) {
-                Serial.println("Value1: OnOff");
-                digitalWrite(LED4_Pin, HIGH);
-                delay(150);
-                digitalWrite(LED4_Pin, LOW);
-            }
-            delay(300);
-            //
-            return;
+void initLed() {
+    pinMode(LED1_PIN, OUTPUT);
+    pinMode(LED2_PIN, OUTPUT);
+    pinMode(LED3_PIN, OUTPUT);
+    pinMode(LED4_PIN, OUTPUT);
+}
+
+void setup() {
+    initSerial();
+    initWiFi();
+    initLed();
+}
+
+void refreshLeds() {
+    for(uint8_t i = 0; i < NUM_LEDS; i++) {
+        leds[i].loop();
+    }
+}
+
+void handleControl() {
+    // analog read resistance
+    uint16_t raw = analogRead(analogPin);
+    if (raw) {
+        buffer = raw * Vin;
+        Vout = (buffer) / 1024.0;
+        buffer = (Vin / Vout) - 1;
+        R2 = R1 * buffer;
+        if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {            
+            leds[LED_2].setState(true);
+        }
+        if (R2 <= (up + (up / 100 * infelicity)) && R2 >= (up - (up / 100 * infelicity))) {
+            leds[LED_1].setState(true);
+        }
+        if (R2 <= (cancel + (cancel / 100 * infelicity)) && R2 >= (cancel - (cancel / 100 * infelicity))) {
+            leds[LED_3].setState(true);
+        }
+        if (R2 <= 0.5) {
+            leds[LED_4].setState(true);
         }
     }
+}
 
-    // Read the first line of the request
-    request = client.readStringUntil('\r');
+void loop() {
+    handleControl();
 
-    if (request.indexOf("LEDON1") > 0) {
-        digitalWrite(LED1_Pin, HIGH);
-        delay(250);
-        digitalWrite(LED1_Pin, LOW);
-    }
-    if (request.indexOf("LEDON2") > 0) {
-        digitalWrite(LED2_Pin, HIGH);
-        delay(250);
-        digitalWrite(LED2_Pin, LOW);
-    }
-    if (request.indexOf("LEDON3") > 0) {
-        digitalWrite(LED3_Pin, HIGH);
-        delay(250);
-        digitalWrite(LED3_Pin, LOW);
-    }
-    if (request.indexOf("LEDON4") > 0) {
-        digitalWrite(LED4_Pin, HIGH);
-        delay(250);
-        digitalWrite(LED4_Pin, LOW);
-    }
+    refreshLeds();
 
-    client.flush();
-
-    client.print(header);
-    client.print(html_1);
-    client.print(html_2);
-    client.print(html_3);
-    client.print(html_4);
-    client.print(html_5);
-
-    delay(5);
-    // The client will actually be disconnected when the function returns and 'client' object is detroyed
-}  // void loop()
+    if (server.available()) {
+        WiFiClient client = server.available();
+        String request = client.readStringUntil('\r');
+    
+        if (request.indexOf("LEDON1") > 0) {
+            leds[LED_1].setState(true);
+        } else 
+        if (request.indexOf("LEDON2") > 0) {
+            leds[LED_2].setState(true);
+        } else 
+        if (request.indexOf("LEDON3") > 0) {
+            leds[LED_3].setState(true);
+        } else 
+        if (request.indexOf("LEDON4") > 0) {
+            leds[LED_4].setState(true);
+        }
+        client.flush();
+        client.print(response);        
+    }    
+}  
