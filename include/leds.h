@@ -45,22 +45,23 @@ struct LedItem {
     }
 
     void handleClicks() {
+        // последовательность не начата
         if (!_clickSequenceStarted) {
             _clickSequenceStarted = millis();
             _clicks = 1;
             return;
         }
-
-        if (TimePassedSince(_clickSequenceStarted) < ONE_SECOND) {
+        // последовательность начата и прошло менее 1 сек
+        if (_clickSequenceStarted && (TimePassedSince(_clickSequenceStarted) < ONE_SECOND)) {
             _clicks++;
-            if (_clicks >= 3) {
+            if (_clicks == 3) { //1 клик то
                 onTrippleClickEvent();
             } else {
-                Serial.printf("\n%lu pin(%d) clicked: %d\n", millis(), _pin, _clicks);
+                Serial.printf("\n%lu pin(%d) clicked: %d\n", millis() - _clickSequenceStarted, _pin, _clicks);
             }
             return;
         }
-
+        // Ничего из выше описанного
         _clicks = 0;
         _clickSequenceStarted = 0;
     }

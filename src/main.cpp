@@ -3,13 +3,14 @@
 
 #include "consts.h"
 #include "leds.h"
+#include "telnet.h"
 #include "utils.h"
 
 const char WiFiPassword[] = "12345678";
 const char AP_NameChar[] = "cruisecontrol";
 int analogPin = A0;
 
-static const char *response =
+static const char* response =
     "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
     "<!DOCTYPE html><html><head><title>LED Control</title></head><body>"
     "<h2>Speed Up</h2><form id='F1' action='LEDON1'><input class='button' type='submit' value='LED ON' ></form>"
@@ -38,6 +39,8 @@ enum ControlEnum : uint8_t { SPEED_UP,
 
 ControlEnum lastControlState{NUMS_CONTROL_STATES};
 uint32_t lastControlStateTime{0};
+Telnet* telnet;
+WiFiClient* telnet_client{nullptr};
 
 LedItem leds[NUM_LEDS] = {
     {LED_SPEED_UP_PIN},
@@ -86,11 +89,12 @@ void onControlChange(ControlEnum newState) {
     if (lastControlState != newState) {
         if (TimePassedSince(lastControlStateTime) < CONTROL_IGNORE_INTERVAL_ms) {
             return;
-        }     
+        }
     }
     lastControlStateTime = millis();
 
     if (lastControlState != newState) {
+        Serial.println(newState);
         if (lastControlState != NUMS_CONTROL_STATES) {
             leds[lastControlState].onStateChange(false);
         }
@@ -108,7 +112,7 @@ void updateControl() {
         float tmp = raw * V_IN;
         float Vout = tmp / 1024.0;
         tmp = (V_IN / Vout) - 1;
-        float R2 = R1 * tmp;        
+        float R2 = R1 * tmp;
         if (R2 <= (down + (down / 100 * INFELICITY)) && R2 >= (down - (down / 100 * INFELICITY))) {
             request = SPEED_UP;
         } else if (R2 <= (up + (up / 100 * INFELICITY)) && R2 >= (up - (up / 100 * INFELICITY))) {
@@ -117,20 +121,89 @@ void updateControl() {
             request = CANCEL_CMD;
         } else if (R2 <= 0.5) {
             request = SWITCH_CMD;
-        };        
-    }    
-    Serial.print(request);
+        };
+    }
     onControlChange(request);
 }
 
-WiFiServer server(80);
-bool httpStarted{false};
+bool telnetStarted{false};
 uint32_t lastUpdateControl{0};
+
+void handleRequestStr(const String& str) {
+    if (str.isEmpty()) {
+        return;
+    }
+    Serial.println("\"" + str + "\"");
+    ControlEnum request = NUMS_CONTROL_STATES;
+
+    if (str.equalsIgnoreCase("UP")) {
+        request = SPEED_UP;
+    } else if (str.equalsIgnoreCase("DOWN")) {
+        request = SPEED_DOWN;
+    } else if (str.equalsIgnoreCase("CANCEL")) {
+        request = CANCEL_CMD;
+    } else if (str.equalsIgnoreCase("ONOFF")) {
+        request = SWITCH_CMD;
+    }
+    if (request != NUMS_CONTROL_STATES) {
+        onControlChange(request);
+        telnet->sendData(response);
+    }
+}
+
+void handleTelnet() {
+    if (telnet_client) {
+        if (telnet_client->available()) {
+            char buf[128];
+            size_t pos = 0;
+            while (telnet_client->available()) {
+                char chr = telnet_client->read();
+                if (isPrintable(chr)) {
+                    buf[pos++] = chr;
+                }
+                if (pos >= (sizeof(buf) - 1)) {
+                    // спорно что делать
+                    break;
+                }
+                if ((chr == '/n') || (chr == '/r')) {
+                    String str{buf};
+                    buf[pos] = '\x0';
+                    handleRequestStr(str);
+                    pos = 0;
+                };
+            };
+        };
+    };
+};
+
 void loop() {
-    if (!httpStarted) {
-        server.begin();
-        server.setNoDelay(true);
-        httpStarted = true;
+    if (!telnetStarted) {
+        if (!telnet) {
+            telnet = new Telnet(23);
+            telnet->onInit();
+            telnet->setEventHandler([](TelnetEventType event, WiFiClient* client) {
+                switch (event) {
+                    case CLIENT_CONNECTED:
+                        telnet_client = client;
+                        client->flush();
+                        client->println("Hi!");
+                        break;
+                    case CLIENT_DISCONNECTED:
+                        telnet_client = nullptr;
+                        Serial.println("disconnected");
+                        break;
+                    default:
+                        break;
+                }
+            });
+        }
+        telnetStarted = telnet->onStart();
+        Serial.printf("telnet: %s/n", telnetStarted ? "started" : "failed");
+    }
+
+    if (telnetStarted) {
+        telnet->onLoop();
+        handleTelnet();
     }
 
     if (TimePassedSince(lastUpdateControl) > CONTROL_INTERVAL_ms) {
@@ -139,24 +212,4 @@ void loop() {
     }
 
     refreshLeds();
-
-    if (server.available()) {
-        WiFiClient client = server.available();
-        String requestStr = client.readStringUntil('\r');
-        ControlEnum request = NUMS_CONTROL_STATES;
-        if (requestStr.indexOf("LEDON1")) {
-            requestStr = SPEED_UP;
-        } else if (requestStr.indexOf("LEDON2")) {
-            requestStr = SPEED_DOWN;
-        } else if (requestStr.indexOf("LEDON3")) {
-            requestStr = CANCEL_CMD;
-        } else if (requestStr.indexOf("LEDON4")) {
-            requestStr = SWITCH_CMD;
-        }
-        if (request != NUMS_CONTROL_STATES) {
-            onControlChange(request);
-        }
-        client.print(response);
-        client.flush();
-    }
 }
