@@ -96,26 +96,23 @@ void onControlChange(ControlEnum newState) {
 }
 
 void updateControl() {
-    uint16_t raw = analogRead(analogPin);
-    if (!raw) {
-        return;
-    }
-    float tmp = raw * V_IN;
-    float Vout = tmp / 1024.0;
-    tmp = (V_IN / Vout) - 1;
-    float R2 = R1 * tmp;
-
+    uint16_t raw = analogRead(analogPin);    
     ControlEnum request = NUMS_CONTROL_STATES;
-    if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {
-        request = SPEED_UP;
-    } else if (R2 <= (up + (up / 100 * infelicity)) && R2 >= (up - (up / 100 * infelicity))) {
-        request = SPEED_DOWN;
-    } else if (R2 <= (cancel + (cancel / 100 * infelicity)) && R2 >= (cancel - (cancel / 100 * infelicity))) {
-        request = CANCEL_CMD;
-    } else if (R2 <= 0.5) {
-        request = SWITCH_CMD;
-    };
-   
+    if (raw > 100 ) {
+        float tmp = raw * V_IN;
+        float Vout = tmp / 1024.0;
+        tmp = (V_IN / Vout) - 1;
+        float R2 = R1 * tmp;
+        if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {
+            request = SPEED_UP;
+        } else if (R2 <= (up + (up / 100 * infelicity)) && R2 >= (up - (up / 100 * infelicity))) {
+            request = SPEED_DOWN;
+        } else if (R2 <= (cancel + (cancel / 100 * infelicity)) && R2 >= (cancel - (cancel / 100 * infelicity))) {
+            request = CANCEL_CMD;
+        } else if (R2 <= 0.5) {
+            request = SWITCH_CMD;
+        };
+    }
     onControlChange(request);        
 }
 
