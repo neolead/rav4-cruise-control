@@ -2,7 +2,8 @@
 
 #include <Arduino.h>
 
-#define LED_LIGHT_TIME_ms 150
+#define ONE_SECOND 1000
+#define LED_LIGHT_TIME_ms 3 * ONE_SECOND
 
 struct LedItem {
     uint8_t pin;
@@ -30,7 +31,7 @@ struct LedItem {
     }
 
     void refresh() {
-        Serial.printf("pin(%d): %d", pin, state);
+        Serial.printf("%lu pin(%d): %s\n", millis(), pin, state ? "ON": "OFF");
         digitalWrite(pin, state ? HIGH : LOW);
     }
 };
