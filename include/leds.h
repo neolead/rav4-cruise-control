@@ -4,6 +4,8 @@
 
 #include "consts.h"
 #include "utils.h"
+extern String tri ;
+
 
 struct LedItem {
     uint8_t _pin;
@@ -58,6 +60,7 @@ struct LedItem {
                 onTrippleClickEvent();
             } else {
                 Serial.printf("\n%lu pin(%d) clicked: %d\n", millis() - _clickSequenceStarted, _pin, _clicks);
+                tri = "tripple";
             }
             return;
         }

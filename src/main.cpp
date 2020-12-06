@@ -9,6 +9,8 @@
 const char WiFiPassword[] = "12345678";
 const char AP_NameChar[] = "cruisecontrol";
 int analogPin = A0;
+String readString;
+String tri = "";
 
 static const char* response =
     "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
@@ -51,12 +53,12 @@ LedItem leds[NUM_LEDS] = {
 
 void initSerial() {
     Serial.begin(115200);
-    Serial.println();
+    //Serial.println();
 }
 
 void initWiFi() {
     WiFi.softAP(AP_NameChar, WiFiPassword);
-    delay(2000);
+    delay(1000);
 }
 
 void initLed() {
@@ -147,31 +149,46 @@ void handleRequestStr(const String& str) {
     }
     if (request != NUMS_CONTROL_STATES) {
         onControlChange(request);
-        telnet->sendData(response);
+        //telnet->sendData(response);
     }
 }
 
 void handleTelnet() {
     if (telnet_client) {
+              if ( tri == "tripple") {
+                    telnet->sendData("TRIPPLE CLICK ARRIVES\r\n");
+                    tri = "";  }
+
         if (telnet_client->available()) {
-            char buf[128];
-            size_t pos = 0;
+
             while (telnet_client->available()) {
-                char chr = telnet_client->read();
-                if (isPrintable(chr)) {
-                    buf[pos++] = chr;
-                }
-                if (pos >= (sizeof(buf) - 1)) {
-                    // спорно что делать
-                    break;
-                }
-                if ((chr == '/n') || (chr == '/r')) {
-                    String str{buf};
-                    buf[pos] = '\x0';
-                    handleRequestStr(str);
-                    pos = 0;
-                };
-            };
+              delay(3);  
+
+              char chr = telnet_client->read();
+              readString += chr; 
+            }
+            readString.trim();
+            if (readString.length() >0)
+            {
+                if (readString == "UP"){
+                    Serial.println("\r\nswitching UP\r\n");
+                    handleRequestStr("UP");
+                    telnet->sendData("UPOK\r\n");}
+                if (readString == "DOWN"){
+                    Serial.println("\r\nswitching DOWN\r\n");
+                    handleRequestStr("DOWN");
+                    telnet->sendData("DOWNOK\r\n");}
+                if (readString == "CANCEL"){
+                    Serial.println("\r\nswitching CANCEL\r\n");
+                    handleRequestStr("CANCEL");
+                    telnet->sendData("CANCELOK\r\n");}
+                if (readString == "ONOFF"){
+                    Serial.println("\r\nswitching ONOFF\r\n");
+                    handleRequestStr("ONOFF");
+                    telnet->sendData("ONOFFOK\r\n");}
+
+                readString="";
+            }
         };
     };
 };
@@ -186,7 +203,7 @@ void loop() {
                     case CLIENT_CONNECTED:
                         telnet_client = client;
                         client->flush();
-                        client->println("Hi!");
+                        client->println("220 Sendmail ESMTP ready\n\n");
                         break;
                     case CLIENT_DISCONNECTED:
                         telnet_client = nullptr;
