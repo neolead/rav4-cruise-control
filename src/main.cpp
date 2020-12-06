@@ -20,7 +20,8 @@ int infelicity = 20;  //infelicity in cruise control controller
 
 WiFiServer server(80);
 
-static const char* response = "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
+static const char *response =
+    "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
     "<!DOCTYPE html><html><head><title>LED Control</title></head><body>"
     "<h2>Speed Up</h2><form id='F1' action='LEDON1'><input class='button' type='submit' value='LED ON' ></form>"
     "<h2>Speed Down</h2><form id='F1' action='LEDON2'><input class='button' type='submit' value='LED ON' ></form>"
@@ -33,11 +34,13 @@ static const uint8_t LED2_PIN = D6;
 static const uint8_t LED3_PIN = D7;
 static const uint8_t LED4_PIN = D8;
 
-enum LedEnum : uint8_t { LED_1,
-                         LED_2,
-                         LED_3,
-                         LED_4,
-                         NUM_LEDS };
+enum LedEnum : uint8_t {
+    LED_1,
+    LED_2,
+    LED_3,
+    LED_4,
+    NUM_LEDS
+};
 
 LedItem leds[NUM_LEDS] = {
     {LED1_PIN},
@@ -45,7 +48,6 @@ LedItem leds[NUM_LEDS] = {
     {LED3_PIN},
     {LED4_PIN},
 };
-
 
 void initSerial() {
     Serial.begin(115200);
@@ -58,10 +60,9 @@ void initWiFi() {
 }
 
 void initLed() {
-    pinMode(LED1_PIN, OUTPUT);
-    pinMode(LED2_PIN, OUTPUT);
-    pinMode(LED3_PIN, OUTPUT);
-    pinMode(LED4_PIN, OUTPUT);
+    for (uint8_t i = 0; i < NUM_LEDS; i++) {
+        leds[i].init();
+    }
 }
 
 void setup() {
@@ -71,7 +72,7 @@ void setup() {
 }
 
 void refreshLeds() {
-    for(uint8_t i = 0; i < NUM_LEDS; i++) {
+    for (uint8_t i = 0; i < NUM_LEDS; i++) {
         leds[i].loop();
     }
 }
@@ -84,7 +85,7 @@ void handleControl() {
         Vout = (buffer) / 1024.0;
         buffer = (Vin / Vout) - 1;
         R2 = R1 * buffer;
-        if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {            
+        if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {
             leds[LED_2].setState(true);
         }
         if (R2 <= (up + (up / 100 * infelicity)) && R2 >= (up - (up / 100 * infelicity))) {
@@ -107,20 +108,17 @@ void loop() {
     if (server.available()) {
         WiFiClient client = server.available();
         String request = client.readStringUntil('\r');
-    
+
         if (request.indexOf("LEDON1") > 0) {
             leds[LED_1].setState(true);
-        } else 
-        if (request.indexOf("LEDON2") > 0) {
+        } else if (request.indexOf("LEDON2") > 0) {
             leds[LED_2].setState(true);
-        } else 
-        if (request.indexOf("LEDON3") > 0) {
+        } else if (request.indexOf("LEDON3") > 0) {
             leds[LED_3].setState(true);
-        } else 
-        if (request.indexOf("LEDON4") > 0) {
+        } else if (request.indexOf("LEDON4") > 0) {
             leds[LED_4].setState(true);
         }
         client.flush();
-        client.print(response);        
-    }    
-}  
+        client.print(response);
+    }
+}
