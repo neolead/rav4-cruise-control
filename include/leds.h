@@ -7,20 +7,21 @@
 
 struct LedItem {
     uint8_t _pin;
-    bool _state;
+    bool _ledState;
+    bool _controlState;
     uint32_t _stateChangedTime;
     uint32_t _clickSequenceStarted;
     bool _clicks;
-    LedItem(uint8_t pin) : _state{false}, _stateChangedTime{0},  _clickSequenceStarted{0}, _clicks{0} {};
+    LedItem(uint8_t pin) : _ledState{false}, _controlState{false}, _stateChangedTime{0},  _clickSequenceStarted{0}, _clicks{0} {};
 
     void init() {
         pinMode(_pin, OUTPUT);
     }
 
     void loop() {
-        if (_state) {
+        if (_ledState) {
             if (TimePassedSince(_stateChangedTime) > LED_LIGHT_TIME_ms) {                
-                _state = false;
+                _ledState = false;
                 refresh();
             }
         }
@@ -43,25 +44,28 @@ struct LedItem {
                     Serial.printf("%lu pin(%d) clicked: %d\n", millis(), _pin, _clicks);        
                     return;
                 }
+                return;
             }
         }                  
         _clicks = 0;
         _clickSequenceStarted = 0;
     }
 
-    void onPress(bool newState) {
-        if (_state != newState) {
-            _state = newState;
-            if (!_state) {
-               handleClicks();
+    void onStateChange(bool newState) {
+        if (_controlState != newState) {
+            _controlState = newState;
+            if (_controlState) { 
+                _ledState = true;                            
+            } else {
+                handleClicks();
             }
+            refresh();    
             _stateChangedTime = millis();
-            refresh();
         }
     }
 
     void refresh() {
-        Serial.printf("%lu pin(%d): %s\n", millis(), _pin, _state ? "ON": "OFF");        
-        digitalWrite(_pin, _state ? HIGH : LOW);
+        Serial.printf("%lu pin(%d): %s\n", millis(), _pin, _ledState ? "ON": "OFF");        
+        digitalWrite(_pin, _ledState ? HIGH : LOW);
     }
 };
