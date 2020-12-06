@@ -1,24 +1,13 @@
 #include <Arduino.h>
 #include <ESP8266WiFi.h>
 
+#include "consts.h"
 #include "leds.h"
+#include "utils.h"
 
 const char WiFiPassword[] = "12345678";
 const char AP_NameChar[] = "cruisecontrol";
 int analogPin = A0;
-int raw = 0;
-float Vin = 3.28;
-float Vout = 0;
-float R1 = 2000;
-float R2 = 0;
-float RX = 100000;
-float buffer = 0;
-float down = 515;     //resistance of cruise controller when up speed in ohm
-float up = 142;       //resistance of cruise controller when down speed in ohm
-float cancel = 1379;  //resistance of cruise controller when cancel in ohm
-int infelicity = 20;  //infelicity in cruise control controller
-
-WiFiServer server(80);
 
 static const char *response =
     "HTTP/1.1 200 OK\r\nContent-Type: text/html\r\n\r\n"
@@ -55,8 +44,8 @@ void initSerial() {
 }
 
 void initWiFi() {
-    boolean conn = WiFi.softAP(AP_NameChar, WiFiPassword);
-    server.begin();
+    WiFi.softAP(AP_NameChar, WiFiPassword);
+    delay(2000);
 }
 
 void initLed() {
@@ -77,48 +66,65 @@ void refreshLeds() {
     }
 }
 
-void handleControl() {
-    // analog read resistance
+static const int infelicity = 20;  //infelicity in cruise control controller
+static const uint16_t down = 515;     //resistance of cruise controller when up speed in ohm
+static const uint16_t up = 142;       //resistance of cruise controller when down speed in ohm
+static const uint16_t cancel = 1379;  //resistance of cruise controller when cancel in ohm
+static const float V_IN = 3.28;
+static const float R1 = 2000;
+static const float RX = 100000;
+void handleControl() {        
     uint16_t raw = analogRead(analogPin);
     if (raw) {
-        buffer = raw * Vin;
-        Vout = (buffer) / 1024.0;
-        buffer = (Vin / Vout) - 1;
-        R2 = R1 * buffer;
+        float tmp = raw * V_IN;
+        float Vout = tmp / 1024.0;
+        tmp = (V_IN / Vout) - 1;       
+        float R2 = R1 * tmp;
         if (R2 <= (down + (down / 100 * infelicity)) && R2 >= (down - (down / 100 * infelicity))) {
-            leds[LED_2].setState(true);
-        }
+            leds[LED_2].onPress(true);
+        } else 
         if (R2 <= (up + (up / 100 * infelicity)) && R2 >= (up - (up / 100 * infelicity))) {
-            leds[LED_1].setState(true);
-        }
+            leds[LED_1].onPress(true);
+        } else 
         if (R2 <= (cancel + (cancel / 100 * infelicity)) && R2 >= (cancel - (cancel / 100 * infelicity))) {
-            leds[LED_3].setState(true);
-        }
+            leds[LED_3].onPress(true);
+        } else 
         if (R2 <= 0.5) {
-            leds[LED_4].setState(true);
-        }
+            leds[LED_4].onPress(true);
+        };
     }
 }
 
+WiFiServer server(80);
+bool httpStarted{false};
+uint32_t lastHandleControl{0};
 void loop() {
-    handleControl();
+    if (!httpStarted) {        
+        server.begin();        
+        server.setNoDelay(true);
+        httpStarted = true;
+    }
+
+    if (TimePassedSince(lastHandleControl) > CONTROL_INTERVAL_ms) {
+        handleControl();
+        lastHandleControl = millis();
+    }
 
     refreshLeds();
 
     if (server.available()) {
-        WiFiClient client = server.available();
-        String request = client.readStringUntil('\r');
-
-        if (request.indexOf("LEDON1") > 0) {
-            leds[LED_1].setState(true);
-        } else if (request.indexOf("LEDON2") > 0) {
-            leds[LED_2].setState(true);
-        } else if (request.indexOf("LEDON3") > 0) {
-            leds[LED_3].setState(true);
-        } else if (request.indexOf("LEDON4") > 0) {
-            leds[LED_4].setState(true);
-        }
-        client.flush();
+        WiFiClient client = server.available();                
+        String request = client.readStringUntil('\r');        
+        if (request.indexOf("LEDON1")) {
+            leds[LED_1].onPress(true);
+        } else if (request.indexOf("LEDON2")) {
+            leds[LED_2].onPress(true);
+        } else if (request.indexOf("LEDON3")) {
+            leds[LED_3].onPress(true);
+        } else if (request.indexOf("LEDON4")) {
+            leds[LED_4].onPress(true);
+        }        
         client.print(response);
+        client.flush();
     }
 }
