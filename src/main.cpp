@@ -162,7 +162,7 @@ void handleTelnet() {
         if (telnet_client->available()) {
 
             while (telnet_client->available()) {
-              delay(3);  
+              //delay(3);  
 
               char chr = telnet_client->read();
               readString += chr; 
@@ -173,19 +173,19 @@ void handleTelnet() {
                 if (readString == "UP"){
                     Serial.println("\r\nswitching UP\r\n");
                     handleRequestStr("UP");
-                    telnet->sendData("UPOK\r\n");}
+                    telnet->sendData("UPOK");}
                 if (readString == "DOWN"){
                     Serial.println("\r\nswitching DOWN\r\n");
                     handleRequestStr("DOWN");
-                    telnet->sendData("DOWNOK\r\n");}
+                    telnet->sendData("DOWNOK");}
                 if (readString == "CANCEL"){
                     Serial.println("\r\nswitching CANCEL\r\n");
                     handleRequestStr("CANCEL");
-                    telnet->sendData("CANCELOK\r\n");}
+                    telnet->sendData("CANCELOK");}
                 if (readString == "ONOFF"){
                     Serial.println("\r\nswitching ONOFF\r\n");
                     handleRequestStr("ONOFF");
-                    telnet->sendData("ONOFFOK\r\n");}
+                    telnet->sendData("ONOFFOK");}
 
                 readString="";
             }
