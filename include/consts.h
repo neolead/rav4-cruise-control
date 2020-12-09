@@ -8,5 +8,6 @@
 #define CONTROL_IGNORE_INTERVAL_ms 0
 
 // Время свечения светодида 
-#define LED_LIGHT_TIME_ms 100
+//#define LED_LIGHT_TIME_ms 100
+#define LED_LIGHT_TIME_ms 1000
 

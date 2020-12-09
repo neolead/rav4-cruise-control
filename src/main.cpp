@@ -81,7 +81,8 @@ void refreshLeds() {
 
 static const int INFELICITY = 10;     //infelicity in cruise control controller
 static const uint16_t down = 515;     //resistance of cruise controller when up speed in ohm
-static const uint16_t up = 142;       //resistance of cruise controller when down speed in ohm
+//static const uint16_t up = 142;       //resistance of cruise controller when down speed in ohm
+static const uint16_t up = 107;       //resistance of cruise controller when down speed in ohm
 static const uint16_t cancel = 1379;  //resistance of cruise controller when cancel in ohm
 static const float V_IN = 3.28;
 static const float R1 = 2000;
