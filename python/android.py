@@ -8,7 +8,7 @@ import sys
 import telnetlib
 th = ""
 lol = 0
-tn_ip = "127.0.0.1"
+tn_ip = "192.168.4.1"
 tn_port = "23"
 data = ""
 isactive = "#ARRIVES#"
@@ -51,7 +51,6 @@ def getspeeds():
     global active
     global gps
     global limited
-    #print ("We in getspeeds")
     if active is True:
         try:
             gps = \
@@ -67,7 +66,6 @@ def getspeeds():
                 print(str(gps))
         except:
             gps = 0
-	    #tn.write(str(gps))
             time.sleep(5)
             pass
 
@@ -77,7 +75,6 @@ def getspeeds():
                     "ps -A|grep -q -i ru.yandex.yandexnavi && (/system/bin/screencap -p /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/mogrify -crop '125x100+910+140' -set units PixelsPerInch -density 300 -write  /data/data/com.termux/files/home/map_.png  /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/tesseract --oem 0 -c tessedit_char_whitelist=0123456789  /data/data/com.termux/files/home/map_.png /data/data/com.termux/files/home/map1 > /dev/null 2>&1 &&head  -1 /data/data/com.termux/files/home/map1.txt)) )"
                 ).read()
             print ("We req limit")
-#            print (str(limited))
             limited = limited.replace("\r", "")
             limited = limited.replace("\n", "")
             print (limited)
@@ -87,22 +84,12 @@ def getspeeds():
         except:
             limited = 0
             pass
-#    if active == False:
-#        print("Active if off")
 
 def check():
     global gps
     global limited
-#    global diff
     getspeeds()
-    #tn.write(str(gps))
-    #tn.write(str(limited))
     number = 1
-#    if (gps == 0) or (limited == 0):
-#        while (number <= 3):
-#            print("Retring get speed limits" + str(number))
-#            getspeeds()
-#            number = number + 1
     if (gps == 0) or (limited == 0):
         return None
     if (int(limited) < int(gps)):
@@ -114,7 +101,6 @@ def check():
             diff = ((gps - limited) / 2)
         print (int(diff))
         print ("we in limited lower gps")
-#        time.sleep(5)
         senddatadown(int(diff))
     elif (int(limited) > int(gps)):
         gps = (int(gps))
@@ -125,13 +111,7 @@ def check():
             diff = ((gps - limited) / 2)
         print (int(diff))
         print ("we in limited more gps")
-#        time.sleep(5)
         senddataup(int(diff))
-#    else:
-#        diff = 0
-#        print (int(diff))
-#        print ("we in else")
-#        time.sleep(5)
 
 
 def connect():
@@ -143,7 +123,6 @@ def connect():
             tn = telnetlib.Telnet(tn_ip, tn_port, 15)
             connected = True
             print ("Connected")
-#            run()
             if (lol <1):
                 print ("Starting thread")
             	th = threading.Thread(target=run)
@@ -152,8 +131,6 @@ def connect():
             if th.is_alive() is False:
                 th = threading.Thread(target=run)
                 th.start()
-#
-#            check()
             checkme()
         except IOError:
             print ("Reconnecting")
@@ -161,7 +138,6 @@ def connect():
 
 def checkme():
     while True:
-        #tn.write('\r\ncheckme\r\n')
         check()
 
   
@@ -172,15 +148,11 @@ def run():
     global limited
     global active
     print ("We are in main loop")
-#    th.join()
     try:
         while True:
             data=''
             while data.find('#'):  # == -1:
                 data = tn.read_very_eager()
-#                tn.write('ftest\r\n')
-#                check()
-            #tn.write(data + ' \r\n')
             if(isactive in data):
                 print ("We found " + isactive + "\r\n")
                 tn.write("SWITCHED\n")
@@ -201,18 +173,9 @@ def run():
                 print ("We found " + onoff)
             else:
                 print ("Try again")
-                #tn.write("Try again" + "\n")
     except IOError:
         print ("Connection Lost")
         connected = False
-#        connect()
-
-
 
 
 connect()
-###    gps = (int(100))  # debug
-###    limited = (int(80))  # debug
-#    tn.write("gps is " + str(gps) + ' \r\n')
-#    tn.write("limited is " + str(limited) + ' \r\n')
-#    time.sleep (5)
