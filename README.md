@@ -18,7 +18,7 @@ tester.ino  - arduino/nodemcu test project to get real values for cruise control
 transistor1.jpg  - principial wiring for chip to make cruise control
 
 ```#install termux on android
-install termuxapi on androidA
+install termuxapi on android
 inside termux: 
 #  install 
 apt install tsu
