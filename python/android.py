@@ -77,8 +77,13 @@ def getspeeds():
                 os.popen(
                    # "ps -A|grep -q -i ru.yandex.yandexnavi && (/system/bin/screencap -p /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/mogrify -crop '125x100+910+140' -set units PixelsPerInch -density 300 -write  /data/data/com.termux/files/home/map_.png  /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/tesseract --oem 0 -c tessedit_char_whitelist=0123456789  /data/data/com.termux/files/home/map_.png /data/data/com.termux/files/home/map1 > /dev/null 2>&1 &&head  -1 /data/data/com.termux/files/home/map1.txt)) )"
                    #Yandex speed limits
-                    "ps -A|grep -q -i info.mapcam.droid && (/system/bin/screencap -p /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/mogrify -crop '200x140+340+700' -set units PixelsPerInch -density 300 -write  /data/data/com.termux/files/home/map_.png  /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/tesseract --oem 0 -c tessedit_char_whitelist=0123456789  /data/data/com.termux/files/home/map_.png /data/data/com.termux/files/home/map1 > /dev/null 2>&1 &&head  -1 /data/data/com.termux/files/home/map1.txt)) )"
+                    "ps -A|grep -q -i info.mapcam.droid ||am start --user 0 -n info.mapcam.droid/info.mapcam.droid.MainActivity && (/system/bin/screencap -p /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/mogrify -crop '200x140+340+700' -set units PixelsPerInch -density 300 -write  /data/data/com.termux/files/home/map_.png  /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/tesseract --oem 0 -c tessedit_char_whitelist=0123456789  /data/data/com.termux/files/home/map_.png /data/data/com.termux/files/home/map1 > /dev/null 2>&1 &&head  -1 /data/data/com.termux/files/home/map1.txt)) )"
+                   #convert  /data/data/com.termux/files/home/storage/shared/mapx.png  +dither -colors 5 -unique-colors txt:
+                   #FAFAFAFF
 		   #Mapcaminfo speed limits
+		   # info.mapcam.droid
+		   # am start --user 0 -n info.mapcam.droid/info.mapcam.droid.MainActivity
+			
                 ).read()
             print ("We req limit")
             limited = limited.replace("\r", "")
