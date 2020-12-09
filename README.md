@@ -26,11 +26,13 @@ apt install  tesseract
 ```
 
 
-```export termux_bin_path="/data/data/com.termux/files/usr/bin"; export owner="$(stat -c "%u" "$termux_bin_path")"; for f in tesseract; do if [ -f "$termux_bin_path/$f" ]; then su -c "chown $owner:$owner \"$termux_bin_path/$f\" && chmod 700 \"$termux_bin_path/$f\""; fi; done;```
+```
+export termux_bin_path="/data/data/com.termux/files/usr/bin"; export owner="$(stat -c "%u" "$termux_bin_path")"; for f in tesseract; do if [ -f "$termux_bin_path/$f" ]; then su -c "chown $owner:$owner \"$termux_bin_path/$f\" && chmod 700 \"$termux_bin_path/$f\""; fi; done;
+```
 
 
 ##  For current speed using : gplogger (added)
-##  It is possibble to read sped from elm327 by bluetooth
+##  It is possibble to read speed from elm327 by bluetooth
 
 
 |#######################________| Processing of project.....
