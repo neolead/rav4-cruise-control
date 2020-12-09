@@ -1,9 +1,13 @@
 import time
+from threading import Thread
+import threading
 from re import search
 from time import sleep
 import os
 import sys
 import telnetlib
+th = ""
+lol = 0
 tn_ip = "127.0.0.1"
 tn_port = "23"
 data = ""
@@ -47,8 +51,8 @@ def getspeeds():
     global active
     global gps
     global limited
-    print ("We in getspeeds")
-    if active:
+    #print ("We in getspeeds")
+    if active is True:
         try:
             gps = \
                 os.popen(
@@ -63,7 +67,7 @@ def getspeeds():
                 print(str(gps))
         except:
             gps = 0
-	    tn.write(str(gps))
+	    #tn.write(str(gps))
             time.sleep(5)
             pass
 
@@ -83,16 +87,16 @@ def getspeeds():
         except:
             limited = 0
             pass
-
+#    if active == False:
+#        print("Active if off")
 
 def check():
     global gps
     global limited
-    
 #    global diff
     getspeeds()
-    tn.write(str(gps))
-    tn.write(str(limited))
+    #tn.write(str(gps))
+    #tn.write(str(limited))
     number = 1
 #    if (gps == 0) or (limited == 0):
 #        while (number <= 3):
@@ -132,35 +136,61 @@ def check():
 
 def connect():
     global tn
+    global lol
     global connected
     while not connected:
         try:
             tn = telnetlib.Telnet(tn_ip, tn_port, 15)
             connected = True
             print ("Connected")
-            run()
+#            run()
+            if (lol <1):
+                print ("Starting thread")
+            	th = threading.Thread(target=run)
+            	th.start()
+                lol = lol + 1
+            if th.is_alive() is False:
+                th = threading.Thread(target=run)
+                th.start()
+#
+#            check()
+            checkme()
         except IOError:
             print ("Reconnecting")
             time.sleep (2)
 
+def checkme():
+    while True:
+        #tn.write('\r\ncheckme\r\n')
+        check()
 
+  
 def run():
     global tn
     global connected
     global gps
     global limited
+    global active
     print ("We are in main loop")
+#    th.join()
     try:
         while True:
             data=''
-            #Listen for incoming data
             while data.find('#'):  # == -1:
                 data = tn.read_very_eager()
-                check()
-            tn.write(data + ' \r\n')
+#                tn.write('ftest\r\n')
+#                check()
+            #tn.write(data + ' \r\n')
             if(isactive in data):
-                print ("We found " + isactive)
+                print ("We found " + isactive + "\r\n")
                 tn.write("SWITCHED\n")
+                tn.write ("\r\nACTIVE IS " + str(active) + "\r\n")
+                if active == True:
+                    active = False
+                    tn.write ("\r\nACTIVE AFTER " + str(active) + "\r\n")
+                elif active == False:
+                    active = True
+                    tn.write ("\r\nACTIVE AFTER " + str(active) + "\r\n")
             elif (up in data):
                 print ("We found " + up)
             elif (down in data):
@@ -171,11 +201,13 @@ def run():
                 print ("We found " + onoff)
             else:
                 print ("Try again")
-                tn.write("Try again" + "\n")
+                #tn.write("Try again" + "\n")
     except IOError:
         print ("Connection Lost")
         connected = False
-        connect()
+#        connect()
+
+
 
 
 connect()
