@@ -55,7 +55,10 @@ def getspeeds():
         try:
             gps = \
                 os.popen(
-                    "tail -1  /data/data/com.termux/files/home/storage/shared/Android/data/com.mendhak.gpslogger/files/20201207.csv |awk -F, '{print $7}'|awk -F. '{print $1}'").read()
+            #        "tail -1  /data/data/com.termux/files/home/storage/shared/Android/data/com.mendhak.gpslogger/files/gpslogger.csv |awk -F, '{print $7}'|awk -F. '{print $1}'").read()
+                     "ps -A|grep -q -i com.mendhak.gpslogger || am start --user 0 -n com.mendhak.gpslogger/com.mendhak.gpslogger.GpsMainActivity && tail -1  /data/data/com.termux/files/home/storage/shared/Android/data/com.mendhak.gpslogger/files/gpslogger.csv |awk -F, '{print $7}'|awk -F. '{print $1}'").read()
+            # run gps "am start --user 0 -n com.mendhak.gpslogger/com.mendhak.gpslogger.GpsMainActivity"
+            # "ps -A|grep -q -i com.mendhak.gpslogger || am start --user 0 -n com.mendhak.gpslogger/com.mendhak.gpslogger.GpsMainActivity && tail -1  /data/data/com.termux/files/home/storage/shared/Android/data/com.mendhak.gpslogger/files/gpslogger.csv |awk -F, '{print $7}'|awk -F. '{print $1}'").read()
             print ("We req gps")
             gps = gps.replace("\r", "")
             gps = gps.replace("\n", "")
