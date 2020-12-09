@@ -7,10 +7,18 @@ Project based on capturing part of warnings,OCR - it , and control over nodemcu 
 
 
 ```Cruise control switch circuit.jpg```  Rav4 schematic cruise control regulator
+
+
 ```resistor.jpg```  How to connect cruise control regulator to nodemcu/arduino, does not matter
+
+
 ```schematic.jpg``` principial schematic of rav4 - (2004 aca20) -testing - cruise control wiring
+
+
 ```tester.ino```  - arduino/nodemcu test project to get real values for cruise control regulator(different resistance)(with resistor 2kOm) 
 (unknown resistor is a "cruise control regulator" ,from the car)
+
+
 ```transistor1.jpg```  - principial wiring for chip to make cruise control
 
 
