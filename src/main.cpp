@@ -156,7 +156,7 @@ void handleRequestStr(const String& str) {
 void handleTelnet() {
     if (telnet_client) {
               if ( tri == "tripple") {
-                    telnet->sendData("TRIPPLE CLICK ARRIVES\r\n");
+                    telnet->sendData("#ARRIVES#\r\n");
                     tri = "";  }
 
         if (telnet_client->available()) {
