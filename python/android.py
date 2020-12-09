@@ -1,5 +1,4 @@
 import time
-import i
 from re import search
 from time import sleep
 import os
@@ -153,7 +152,6 @@ def run():
     print ("We are in main loop")
     try:
         while True:
-            i.display()
             data=''
             while data.find('#'):  # == -1:
                 data = tn.read_very_eager()
