@@ -153,6 +153,7 @@ def run():
     try:
         while True:
             data=''
+            #Listen for incoming data
             while data.find('#'):  # == -1:
                 data = tn.read_very_eager()
                 check()
