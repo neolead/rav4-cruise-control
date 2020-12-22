@@ -118,12 +118,16 @@ void updateControl() {
         float R2 = R1 * tmp;
         if (R2 <= (down + (down / 100 * INFELICITY)) && R2 >= (down - (down / 100 * INFELICITY))) {
             request = SPEED_UP;
+            telnet->sendData("SELF_U\r\n");
         } else if (R2 <= (up + (up / 100 * INFELICITY)) && R2 >= (up - (up / 100 * INFELICITY))) {
             request = SPEED_DOWN;
+            telnet->sendData("SELF_D\r\n");
         } else if (R2 <= (cancel + (cancel / 100 * INFELICITY)) && R2 >= (cancel - (cancel / 100 * INFELICITY))) {
             request = CANCEL_CMD;
+            telnet->sendData("SELF_C\r\n");
         } else if (R2 <= 0.5) {
             request = SWITCH_CMD;
+            telnet->sendData("SELF_SW\r\n");
         };
     }
     onControlChange(request);
@@ -216,7 +220,7 @@ void loop() {
             });
         }
         telnetStarted = telnet->onStart();
-        Serial.printf("telnet: %s/n", telnetStarted ? "started" : "failed");
+        Serial.printf("telnet: %s\n", telnetStarted ? "started" : "failed");
     }
 
     if (telnetStarted) {
