@@ -91,7 +91,9 @@ ANDROID - enable in dev options enable connection to wifi for fast switching
 
 Using python 2.7
 ```termux -> apt install python2 or pkg install python2```
+
 ```termux -> apt install python2-tools```
+
 ```pip2 install time```
 ```pip2 install keyboard```
 ```pip2 install threading```
