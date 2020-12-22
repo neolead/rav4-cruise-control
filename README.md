@@ -69,40 +69,63 @@ WIRING:
 
 
 Pair your android device with PC over bluetooth
+
 Check which bluetooth com-port are using, for me is COM16..
+
 run:obdsim.exe -w COM16
+
 Start torque application and connect to bluetooth elm , which is your pc.
+
 Play with "speed", in torque speed must changes!
 
 
-```#install termux on android
+```
+
+#install termux on android
+
 install termuxapi on android
+
 inside termux: 
+
 #  install 
+
 apt install tsu
+
 apt install  tesseract
+
 ```
 
 ```
 export termux_bin_path="/data/data/com.termux/files/usr/bin"; export owner="$(stat -c "%u" "$termux_bin_path")"; for f in tesseract; do if [ -f "$termux_bin_path/$f" ]; then su -c "chown $owner:$owner \"$termux_bin_path/$f\" && chmod 700 \"$termux_bin_path/$f\""; fi; done;
 ```
 IMPORTANT!!!
+
 ANDROID - enable in dev options enable connection to wifi for fast switching
 
 Using python 2.7
+
 ```termux -> apt install python2 or pkg install python2```
 
 ```termux -> apt install python2-tools```
 
 ```pip2 install time```
+
 ```pip2 install keyboard```
+
 ```pip2 install threading```
+
 ```pip2 install re```
+
 ```pip2 install import```
+
 ```pip2 install time```
+
 ```pip2 install os```
+
 ```pip2 install sys```
+
 ```pip2 install telnetlib```
+
 
 
 
