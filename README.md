@@ -26,45 +26,45 @@ WIRING:
 ```
 
 
-```Cruise control switch circuit.jpg```  Rav4 schematic cruise control regulator
+```FILES\Cruise control switch circuit.jpg```  Rav4 schematic cruise control regulator
 
 
 
-```termux.apk``` Termux installer for android
+```FILES\termux.apk``` Termux installer for android
 
 
 
-```com.termux-20201222-204146.TiBkp``` Titanium Backup of termux, possible with tesseract :)))
+```FILES\termux_zip\com.termux-20201222-204146.TiBkp.zip``` Titanium Backup of termux, possible with tesseract :)))
 
 
 
-```com.termux.api-20201222-204040.TiBkp``` Titanium Backup of termux API
+```FILES\com.termux.api-20201222-204040.TiBkp``` Titanium Backup of termux API
 
 
 
-```resistor.jpg```  How to connect cruise control regulator to nodemcu/arduino, does not matter
+```FILES\resistor.jpg```  How to connect cruise control regulator to nodemcu/arduino, does not matter
 
 
 
-```schematic.jpg``` principial schematic of rav4 - (2004 aca20) -testing - cruise control wiring
+```FILES\schematic.jpg``` principial schematic of rav4 - (2004 aca20) -testing - cruise control wiring
 
 
 
-```tester.ino```  - arduino/nodemcu test project to get real values for cruise control regulator(different resistance)(with resistor 2kOm) 
+```FILES\tester.ino```  - arduino/nodemcu test project to get real values for cruise control regulator(different resistance)(with resistor 2kOm) 
 (unknown resistor is a "cruise control regulator" ,from the car)
 
 
 
-```transistor1.jpg```  - principial wiring for chip to make cruise control
+```FILES\transistor1.jpg```  - principial wiring for chip to make cruise control
 
 
 
-```org.prowl.torque-20201222-200422.TiBkp``` Titanium backup of Torque - for speed receiving from car
+```FILES\org.prowl.torque-20201222-200422.TiBkp``` Titanium backup of Torque - for speed receiving from car
 
 
 
 
-```obd2-simulator.zip``` OBD2 Simulator for PC+bluetooth
+```FILES\obd2-simulator.zip``` OBD2 Simulator for PC+bluetooth
 
 
 
