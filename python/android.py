@@ -41,7 +41,7 @@ def senddatadown(diff):
     number = 1
     global dosleep
     d1 = "DOWN\r\n"
-    os.popen("termux-toast  -s We are sending DOWN speed")
+#    os.popen("termux-toast  -s We are sending DOWN speed&").read()
     while (number <= diff):
         tn.write(d1.encode())
         time.sleep(0.2)
@@ -59,7 +59,7 @@ def senddataup(diff):
     dx = "DOWN\r\n"
     d1 = "UP\r\n"
     print ("senddataup")
-    os.popen("termux-toast  -s We are sending UP speed")
+#    os.popen("termux-toast  -s We are sending UP speed&").read()
     tn.write(dx.encode())
     time.sleep(0.2)
     while (number <= diff):
@@ -229,7 +229,7 @@ def check():
 
 
 def connect():
-    os.popen("termux-toast  -s Executed gps assistant")
+#    os.popen("termux-toast  -s Executed gps assistant&").read()
     global tn
     global lol
     global connected
