@@ -54,9 +54,12 @@ def senddatadown(diff):
 
 def senddataup(diff):
     global dosleep
-    number = 1
+    number = 0
+    dx = "DOWN\r\n"
     d1 = "UP\r\n"
     print ("senddataup")
+    tn.write(dx.encode())
+    time.sleep(0.2)
     while (number <= diff):
         tn.write(d1.encode())
         time.sleep(0.2)
