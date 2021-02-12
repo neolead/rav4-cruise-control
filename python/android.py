@@ -9,7 +9,7 @@ import os
 import sys
 import telnetlib
 th = ""
-overspeed = 15 #Speed which can be overvalued
+overspeed = 10#Speed which can be overvalued
 lol = 0
 iter = 0
 restart = 0
@@ -43,12 +43,12 @@ def senddatadown(diff):
     d1 = "DOWN\r\n"
     while (number <= diff):
         tn.write(d1.encode())
-        time.sleep(0.4)
+        time.sleep(0.2)
         print (d1)
         number = number + 1
         print ("We just speed down")
     print ("We just speed down and SLEEP")
-    time.sleep (5)
+    #time.sleep (5)
     dosleep = True
 
 
@@ -59,12 +59,12 @@ def senddataup(diff):
     print ("senddataup")
     while (number <= diff):
         tn.write(d1.encode())
-        time.sleep(0.4)
+        time.sleep(0.2)
         print (d1)
         number = number + 1
         print ("We just speed up")
     print ("We just speed UP and SLEEP")
-    time.sleep (5)
+    #time.sleep (5)
     dosleep = True
 
 
@@ -95,7 +95,7 @@ def getspeeds():
 
     if active is True:
         if dosleep is True:
-            time.sleep(8)
+            time.sleep(5)
             dosleep = False
         try:
             gps = \
@@ -140,9 +140,9 @@ def getspeeds():
                 print("we set gps 0")
                 print (str(gps))
             else:
-                if int(gps) >180 or int(gps) < 36:
+                if int(gps) >180 or int(gps) < 60:
                     gps = 0
-                    print ("limit is not valid,(exceed speed >180 or <36")
+                    print ("limit is not valid,(exceed speed >180 or <60")
                     print("we set gps 0")
                     print (str(gps))
         except:
@@ -153,7 +153,7 @@ def getspeeds():
 
         try:
             limited = \
-                os.popen("if ps -A|grep -q -i ru.yandex.yandexnavi; then if /system/bin/screencap -p /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/mogrify -crop '125x100+910+140' -set units PixelsPerInch -density 300 -write  /data/data/com.termux/files/home/map_.png  /data/data/com.termux/files/home/map.png && convert /data/data/com.termux/files/home/map_.png -define histogram:unique-colors=true -format %c histogram:info:-|grep FE5858 -i -q ); then if [ $(convert /data/data/com.termux/files/home/map_.png -define histogram:unique-colors=true -format %c histogram:info:-|grep FE5858 |tr -d ' '|cut -f1 -d ':' ) -ge 500 ]; then /data/data/com.termux/files/usr/bin/tesseract --oem 0 -c tessedit_char_whitelist=0123456789  /data/data/com.termux/files/home/map_.png /data/data/com.termux/files/home/map1 > /dev/null 2>&1 && head  -1 /data/data/com.termux/files/home/map1.txt; 	else  echo 0;	fi else  echo 0;  fi fi ").read()
+                os.popen("if ps -A|grep -q -i ru.yandex.yandexnavi; then if /system/bin/screencap -p /data/data/com.termux/files/home/map.png && (/data/data/com.termux/files/usr/bin/mogrify -crop '125x100+910+140' -set units PixelsPerInch -density 300 -write  /data/data/com.termux/files/home/map_.png  /data/data/com.termux/files/home/map.png && convert /data/data/com.termux/files/home/map_.png -define histogram:unique-colors=true -format %c histogram:info:-|grep FF5858 -i -q ); then if [ $(convert /data/data/com.termux/files/home/map_.png -define histogram:unique-colors=true -format %c histogram:info:-|grep FF5858 |tr -d ' '|cut -f1 -d ':' ) -ge 500 ]; then /data/data/com.termux/files/usr/bin/tesseract --oem 0 -c tessedit_char_whitelist=0123456789  /data/data/com.termux/files/home/map_.png /data/data/com.termux/files/home/map1 > /dev/null 2>&1 && head  -1 /data/data/com.termux/files/home/map1.txt; 	else  echo 0;	fi else  echo 0;  fi fi ").read()
             print ("We reqire limit")
             limited = limited.replace("\r", "")
             limited = limited.replace("\n", "")
@@ -164,9 +164,9 @@ def getspeeds():
                 print ("limit is not valid")
                 print (str(limited))
             else:
-                if int(limited) >180 or int(limited) < 36:
+                if int(limited) >180 or int(limited) < 60:
                     limited = 0
-                    print ("limit is not valid,(exceed speed >180 or <36)")
+                    print ("limit is not valid,(exceed speed >180 or <60)")
                     print (str(limited))
         except:
             limited = 0
@@ -282,7 +282,7 @@ def run():
                     d1 = "DOWN\r\n"
                     tn.write(d1.encode())
                     print ("\r\nACTIVE AFTER " + str(active) + "\r\n")
-                    print ("\r\nWe sended activate Cruise control "
+                    print ("\r\nWe sended activate Cruise control ")
             elif (up in data):
                 print ("We found " + up)
             elif (down in data):
@@ -313,11 +313,6 @@ if s==0:
     os.popen("ip route add table 100 192.168.1.0/24 dev wlan0").read
     os.popen("killall -9 org.prowl.torque").read    
     time.sleep(3)
-#    os.popen("killall -9 ru.yandex.yandexnavi").read
-#    time.sleep(1)
-#    os.popen("am start -W --activity-brought-to-front --user 0 -n info.mapcam.droid/info.mapcam.droid.MainActivity").read()
-#    os.popen("am start -W --activity-brought-to-front --user 0 -n OCTech.Mobile.Applications.TouchScan/octech.mobile.applications.touchscan.MainActivity").read()
-###    os.popen("am start -W --activity-brought-to-front --user 0 -n org.prowl.torque/org.prowl.torque.landing.FrontPage").read()
     os.popen("am start -W --user 0 -n org.prowl.torque/org.prowl.torque.landing.FrontPage&").read()
     time.sleep(5)
     os.popen("am start --activity-brought-to-front --user 0 -n ru.yandex.yandexnavi/ru.yandex.yandexnavi.core.NavigatorActivity").read()
@@ -326,3 +321,4 @@ if s==0:
     dosleep = True
 
 connect()
+
