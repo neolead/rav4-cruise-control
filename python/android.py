@@ -42,6 +42,7 @@ def senddatadown(diff):
     global dosleep
     d1 = "DOWN\r\n"
 #    os.popen("termux-toast  -s We are sending DOWN speed&").read()
+    os.popen("echo We are sending DOWN speed >>l").read()
     while (number <= diff):
         tn.write(d1.encode())
         time.sleep(0.2)
@@ -59,7 +60,7 @@ def senddataup(diff):
     dx = "DOWN\r\n"
     d1 = "UP\r\n"
     print ("senddataup")
-#    os.popen("termux-toast  -s We are sending UP speed&").read()
+    os.popen("echo We are sending UP speed >>l").read()
     tn.write(dx.encode())
     time.sleep(0.2)
     while (number <= diff):
@@ -230,6 +231,7 @@ def check():
 
 def connect():
 #    os.popen("termux-toast  -s Executed gps assistant&").read()
+    os.popen("echo Started. Connecting.. >>l").read()
     global tn
     global lol
     global connected
@@ -237,6 +239,7 @@ def connect():
         try:
             tn = telnetlib.Telnet(tn_ip, tn_port, 15)
             connected = True
+            os.popen("echo Connected.. >>l").read()
             print ("Connected")
             if (lol <1):
                 print ("Starting thread")
@@ -282,11 +285,13 @@ def run():
                 if active == True:
                     active = False
                     print ("\r\nACTIVE AFTER " + str(active) + "\r\n")
+                    os.popen("echo Cruise DISABLED >>l").read()
                 elif active == False:
                     active = True
                     iter = 0
                     d1 = "DOWN\r\n"
                     tn.write(d1.encode())
+                    os.popen("echo Cruise Enabled >>l").read()
                     print ("\r\nACTIVE AFTER " + str(active) + "\r\n")
                     print ("\r\nWe sended activate Cruise control ")
             elif (up in data):
